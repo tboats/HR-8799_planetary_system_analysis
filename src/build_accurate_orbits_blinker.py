@@ -1,4 +1,21 @@
-<!DOCTYPE html>
+"""
+Generate astrometrically precise 3D Keplerian Orbital Tracks for HR 8799.
+Uses exact literature parameters:
+  - Distance: 39.4 pc (1 arcsec = 39.4 AU)
+  - Inclination: i = 28.0 deg (cos(i) = 0.883)
+  - Longitude of Ascending Node: Omega = 62.0 deg (PA of line of nodes)
+  - Image Scale: 650 px = 7.68 arcsec (2.148 px/AU)
+Includes planet position markers and North/East astronomical compass.
+"""
+
+import os
+
+HTML_PATH = "/Users/tboats/Documents/Code/physics/astronomy/Projects/hr8799-jwst-orbits/docs/hr8799_blink_comparator.html"
+
+def create_accurate_orbits_blinker():
+    os.makedirs(os.path.dirname(HTML_PATH), exist_ok=True)
+    
+    html_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -540,3 +557,12 @@
     </script>
 </body>
 </html>
+"""
+
+    with open(HTML_PATH, 'w', encoding='utf-8') as f:
+        f.write(html_content)
+
+    print(f"✅ Created astrometrically precise 3D Keplerian Blink Comparator at: {HTML_PATH}")
+
+if __name__ == "__main__":
+    create_accurate_orbits_blinker()
