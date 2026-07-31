@@ -353,10 +353,15 @@
         function updateDisplay() {
             const activeKey = (blinkActiveFrame === 0) ? currentEpochA : currentEpochB;
             
-            // Toggle native <img> element visibility
+            // Toggle native <img> element visibility and z-index stack
             document.querySelectorAll('.astro-image').forEach(img => {
-                if (img.id === `img_${activeKey}`) img.classList.add('active');
-                else img.classList.remove('active');
+                if (img.id === `img_${activeKey}`) {
+                    img.style.zIndex = '2';
+                    img.style.opacity = '1';
+                } else {
+                    img.style.zIndex = '1';
+                    img.style.opacity = '0';
+                }
             });
 
             // Update overlay badge
