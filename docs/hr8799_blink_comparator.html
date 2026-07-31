@@ -483,24 +483,24 @@
             let activeEpochKey = (blinkActiveFrame === 0) ? currentEpochA : currentEpochB;
             let year = EPOCHS[activeEpochKey].year;
 
-            // DRAW IMAGE
-            if (opacityBlend > 0 && opacityBlend < 100) {
-                const imgA = loadedImages[currentEpochA];
-                const imgB = loadedImages[currentEpochB];
-                if (imgA && imgA.complete) {
-                    ctx.globalAlpha = (100 - opacityBlend) / 100;
-                    ctx.drawImage(imgA, centerX - 350, centerY - 350, 700, 700);
-                }
-                if (imgB && imgB.complete) {
-                    ctx.globalAlpha = opacityBlend / 100;
-                    ctx.drawImage(imgB, centerX - 350, centerY - 350, 700, 700);
-                }
-                ctx.globalAlpha = 1.0;
-            } else {
-                const img = loadedImages[activeEpochKey];
-                if (img && img.complete) {
+            // DRAW IMAGE WITH AUTO-RETRY
+            function drawOrRetry(img, alpha) {
+                if (img && img.complete && img.naturalWidth > 0) {
+                    ctx.globalAlpha = alpha;
                     ctx.drawImage(img, centerX - 350, centerY - 350, 700, 700);
+                    ctx.globalAlpha = 1.0;
+                    return true;
+                } else {
+                    requestAnimationFrame(() => render());
+                    return false;
                 }
+            }
+
+            if (opacityBlend > 0 && opacityBlend < 100) {
+                drawOrRetry(loadedImages[currentEpochA], (100 - opacityBlend) / 100);
+                drawOrRetry(loadedImages[currentEpochB], opacityBlend / 100);
+            } else {
+                drawOrRetry(loadedImages[activeEpochKey], 1.0);
             }
 
             // Draw Inclined 3D Keplerian Projected Orbits
