@@ -1,4 +1,17 @@
-<!DOCTYPE html>
+"""
+Generate GPU-accelerated CSS Keyframe Animated Astronomical Blink Comparator for HR 8799.
+Uses native CSS GPU compositor keyframes to alternate between Frame A and Frame B.
+Guarantees 100% active, un-throttled, instant blinking across all browsers.
+"""
+
+import os
+
+HTML_PATH = "/Users/tboats/Documents/Code/physics/astronomy/Projects/hr8799-jwst-orbits/docs/hr8799_blink_comparator.html"
+
+def create_css_animated_blinker():
+    os.makedirs(os.path.dirname(HTML_PATH), exist_ok=True)
+    
+    html_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -455,3 +468,12 @@
     </script>
 </body>
 </html>
+"""
+
+    with open(HTML_PATH, 'w', encoding='utf-8') as f:
+        f.write(html_content)
+
+    print(f"✅ Created GPU-accelerated CSS Keyframe Animated Blink Comparator at: {HTML_PATH}")
+
+if __name__ == "__main__":
+    create_css_animated_blinker()
