@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR 8799 Astronomical Image Blink Comparator & Spectral Wavelengths</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #090d16;
+            --bg-secondary: #111827;
+            --bg-card: #1f293d;
+            --accent-cyan: #38bdf8;
+            --accent-emerald: #10b981;
+            --accent-purple: #a855f7;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: #374151;
+            --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(180deg, #182238 0%, var(--bg-secondary) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            z-index: 10;
+        }
+
+        .logo-title { display: flex; align-items: center; gap: 12px; }
+
+        .logo-badge {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-emerald));
+            color: #000;
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        h1 { font-size: 1.15rem; font-weight: 600; color: #fff; }
+
+        .header-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 16px; }
+        .header-meta span strong { color: var(--accent-cyan); }
+
+        .workspace {
+            display: grid;
+            grid-template-columns: 300px 1fr 340px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .panel {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow-y: auto;
+        }
+
+        .panel-right { border-right: none; border-left: 1px solid var(--border-color); }
+
+        .section-title {
+            font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 6px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .control-group {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        label { font-size: 0.82rem; color: var(--text-main); display: flex; justify-content: space-between; }
+        label .val-badge { font-family: var(--font-mono); color: var(--accent-cyan); font-size: 0.8rem; }
+
+        select, input[type="range"] {
+            width: 100%;
+            background: #0d1322;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+        .btn {
+            background: #2a374e;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+
+        .btn:hover { background: #374763; border-color: var(--accent-cyan); color: #fff; }
+        .btn.active {
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+            border-color: var(--accent-cyan);
+            color: #fff;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            border: none; color: #fff; font-weight: 600;
+        }
+        .btn-primary:hover { background: linear-gradient(135deg, #1d4ed8, #6d28d9); }
+
+        .viewport-container {
+            position: relative;
+            background: #020408;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000;
+            cursor: grab;
+        }
+
+        .canvas-wrapper:active { cursor: grabbing; }
+        canvas { display: block; }
+
+        .epoch-overlay {
+            position: absolute;
+            top: 20px; left: 20px;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            z-index: 5;
+        }
+
+        .epoch-tag { color: var(--accent-cyan); font-weight: 700; font-size: 1rem; }
+        .epoch-details { color: var(--text-muted); font-size: 0.75rem; margin-top: 2px; }
+
+        .viewport-toolbar {
+            position: absolute; bottom: 20px;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            padding: 6px 16px;
+            display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+            z-index: 5;
+        }
+
+        .toolbar-btn {
+            background: transparent; border: none; color: var(--text-main);
+            font-size: 0.85rem; cursor: pointer; padding: 6px 12px; border-radius: 20px;
+            display: flex; align-items: center; gap: 6px; font-weight: 500; transition: all 0.2s;
+        }
+        .toolbar-btn:hover { color: var(--accent-cyan); background: rgba(255, 255, 255, 0.1); }
+        .toolbar-btn.active { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid rgba(56, 189, 248, 0.4); }
+
+        .astrometric-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; font-family: var(--font-mono); }
+        .astrometric-table th, .astrometric-table td { padding: 6px 8px; text-align: left; border-bottom: 1px solid #26334d; }
+        .astrometric-table th { color: var(--text-muted); }
+
+        .info-card {
+            background: linear-gradient(135deg, #182640, #131c30);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+
+        .info-card h3 {
+            color: var(--accent-cyan);
+            font-size: 0.88rem;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .wavelength-pill {
+            display: inline-block;
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: #000;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 4px;
+        }
+
+        .blink-indicator {
+            width: 10px; height: 10px; border-radius: 50%; background: var(--accent-rose);
+            box-shadow: 0 0 8px var(--accent-rose); transition: background 0.1s;
+        }
+        .blink-indicator.active { background: var(--accent-cyan); box-shadow: 0 0 10px var(--accent-cyan); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-title">
+            <span class="logo-badge">Infrared Spectral Telemetry</span>
+            <h1>HR 8799 Multi-Epoch Blink Comparator & Wavelengths</h1>
+        </div>
+        <div class="header-meta">
+            <span>Target: <strong>HR 8799</strong></span>
+            <span>Band: <strong>Near & Thermal Infrared (1.6 - 4.5 μm)</strong></span>
+            <span>Resonance: <strong>1 : 2 : 4 : 8 MMR</strong></span>
+        </div>
+    </header>
+
+    <div class="workspace">
+        <!-- Left Panel -->
+        <aside class="panel">
+            <div class="section-title">
+                <span>Select Epochs</span>
+                <div id="blinkStatus" class="blink-indicator"></div>
+            </div>
+
+            <div class="control-group">
+                <label for="epochA">Epoch A (Base Image)</label>
+                <select id="epochA">
+                    <option value="2008">2008.8 — Discovery (Keck Ks/L' 2.1-3.8 μm)</option>
+                    <option value="2015">2015.5 — Archival (Subaru H/K 1.6-2.2 μm)</option>
+                    <option value="2022" selected>2022.9 — JWST NIRCam F356W (3.56 μm)</option>
+                    <option value="2024">2024.5 — JWST NIRCam F200W (2.00 μm)</option>
+                    <option value="2026">2026.2 — JWST NIRCam F444W (4.44 μm)</option>
+                </select>
+
+                <label for="epochB">Epoch B (Compare Image)</label>
+                <select id="epochB">
+                    <option value="2008">2008.8 — Discovery (Keck Ks/L' 2.1-3.8 μm)</option>
+                    <option value="2015">2015.5 — Archival (Subaru H/K 1.6-2.2 μm)</option>
+                    <option value="2022">2022.9 — JWST NIRCam F356W (3.56 μm)</option>
+                    <option value="2024">2024.5 — JWST NIRCam F200W (2.00 μm)</option>
+                    <option value="2026" selected>2026.2 — JWST NIRCam F444W (4.44 μm)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <button id="btnToggleBlink" class="btn btn-primary">
+                    <span>⚡ Toggle Automatic Blinking</span>
+                </button>
+                <div class="btn-grid">
+                    <button id="btnShowA" class="btn">Show Epoch A</button>
+                    <button id="btnShowB" class="btn">Show Epoch B</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="blinkRate">Blink Rate <span id="blinkRateVal" class="val-badge">300 ms</span></label>
+                <input type="range" id="blinkRate" min="50" max="1500" step="50" value="300">
+
+                <label for="opacityBlend">Crossfade Blend (A ⟷ B) <span id="opacityVal" class="val-badge">100% A</span></label>
+                <input type="range" id="opacityBlend" min="0" max="100" step="1" value="0">
+            </div>
+
+            <div class="section-title">Target Focus</div>
+            <div class="btn-grid">
+                <button class="btn focus-btn" data-planet="all">Full System</button>
+                <button class="btn focus-btn" data-planet="e">Planet e (16 AU)</button>
+                <button class="btn focus-btn" data-planet="d">Planet d (27 AU)</button>
+                <button class="btn focus-btn" data-planet="c">Planet c (43 AU)</button>
+                <button class="btn focus-btn" data-planet="b">Planet b (68 AU)</button>
+            </div>
+        </aside>
+
+        <!-- Center Viewport -->
+        <main class="viewport-container">
+            <div id="epochOverlay" class="epoch-overlay">
+                <div id="epochTitle" class="epoch-tag">Epoch A: JWST NIRCam (2022.9)</div>
+                <div id="epochSub" class="epoch-details">Filter: F356W | Central Wavelength: 3.56 μm (Thermal Infrared)</div>
+            </div>
+
+            <div id="canvasWrapper" class="canvas-wrapper">
+                <canvas id="astroCanvas" width="700" height="700"></canvas>
+            </div>
+
+            <div class="viewport-toolbar">
+                <button id="btnZoomIn" class="toolbar-btn" title="Zoom In">+</button>
+                <button id="btnZoomOut" class="toolbar-btn" title="Zoom Out">−</button>
+                <button id="btnResetView" class="toolbar-btn" title="Reset View">⟲</button>
+                <button id="btnToggleOverlays" class="toolbar-btn" title="Toggle Planet Labels">🏷️ Labels</button>
+                <button id="btnToggleOrbits" class="toolbar-btn active" title="Toggle Orbit Ellipses">⭕ 3D Keplerian Orbits</button>
+            </div>
+        </main>
+
+        <!-- Right Panel: Wavelengths & Resonances -->
+        <aside class="panel panel-right">
+            <div class="section-title">📡 Wavelengths & Filter Bandpass</div>
+            
+            <div class="info-card">
+                <h3><span>Active Filter Wavelength</span></h3>
+                <div id="wavelengthDisplay" style="margin-top: 4px;">
+                    <div style="font-size:0.82rem; font-weight:600; color:#fff;" id="wvFilterName">JWST NIRCam F356W</div>
+                    <span class="wavelength-pill" id="wvVal">λ = 3.56 μm (Thermal IR)</span>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.76rem; margin-top: 8px; line-height: 1.45;">
+                    These observations operate in the <strong>near-to-thermal infrared (1.6 – 4.5 μm)</strong>. Human eyes see 0.4 – 0.7 μm; JWST observes deep infrared thermal radiation emitted by the young cooling planets.
+                </p>
+            </div>
+
+            <div class="info-card" style="border-color: rgba(16, 185, 129, 0.3);">
+                <h3 style="color: var(--accent-emerald);">💡 Why Infrared Wavelengths?</h3>
+                <ul style="color: var(--text-muted); font-size: 0.76rem; padding-left: 14px; line-height: 1.45;">
+                    <li><strong>Planet Thermal Glow</strong>: Young gas giants (~30 Myr) glow brightly at 800–1100 K, peaking at 3.5–4.5 μm.</li>
+                    <li><strong>Star Contrast</strong>: The A5V star is ~100,000× fainter in infrared relative to the planet than in visible light.</li>
+                </ul>
+            </div>
+
+            <div class="section-title">🪐 1:2:4:8 Laplace Resonance Chain</div>
+            <div class="control-group">
+                <table class="astrometric-table">
+                    <thead>
+                        <tr><th>Planet</th><th>Separation</th><th>Period</th><th>Resonance</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><span style="color:#f87171;">●</span> <strong>HR 8799 e</strong></td><td>16 AU</td><td>~45 yr</td><td>8x</td></tr>
+                        <tr><td><span style="color:#fbbf24;">●</span> <strong>HR 8799 d</strong></td><td>27 AU</td><td>~100 yr</td><td>4x</td></tr>
+                        <tr><td><span style="color:#4ade80;">●</span> <strong>HR 8799 c</strong></td><td>43 AU</td><td>~190 yr</td><td>2x</td></tr>
+                        <tr><td><span style="color:#38bdf8;">●</span> <strong>HR 8799 b</strong></td><td>68 AU</td><td>~460 yr</td><td>1x</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        const EPOCH_IMAGES = {
+            '2008': 'images/hr8799_epoch_2008.png',
+            '2015': 'images/hr8799_epoch_2015.png',
+            '2022': 'images/hr8799_epoch_2022.png',
+            '2024': 'images/hr8799_epoch_2024.png',
+            '2026': 'images/hr8799_epoch_2026.png'
+        };
+
+        const loadedImages = {};
+        for (const [key, path] of Object.entries(EPOCH_IMAGES)) {
+            const img = new Image();
+            img.src = path;
+            img.onload = () => { render(); };
+            loadedImages[key] = img;
+        }
+
+        const PIXELS_PER_ARCSEC = 700.0 / 7.68; 
+        const PARSEC_DIST = 39.4; 
+        const INC_RAD = 28.0 * (Math.PI / 180.0);
+        const OMEGA_RAD = 55.0 * (Math.PI / 180.0);
+
+        const PLANET_PARAMS = {
+            'b': { a: 68.0, P: 460.0, e: 0.02, omega_deg: 110.0, M0_deg: 240.0, color: '#38bdf8' },
+            'c': { a: 43.0, P: 190.0, e: 0.04, omega_deg: 140.0, M0_deg: 310.0, color: '#4ade80' },
+            'd': { a: 27.0, P: 100.0, e: 0.10, omega_deg: 85.0,  M0_deg: 180.0, color: '#fbbf24' },
+            'e': { a: 16.0, P: 45.0,  e: 0.12, omega_deg: 60.0,  M0_deg: 45.0,  color: '#f87171' }
+        };
+
+        const EPOCHS = {
+            '2008': { title: '2008.8 — Discovery Epoch (Keck II)', sub: 'Filter: Ks / L' Band | Wavelength: 2.12 – 3.77 μm (Near/Thermal IR)', filter: 'Keck NIRC2 Ks / L'', wl: 'λ = 2.12 – 3.77 μm (Near/Thermal IR)', year: 2008.8 },
+            '2015': { title: '2015.5 — Archival Baseline (Subaru/GPI)', sub: 'Filter: H & K Band | Wavelength: 1.65 – 2.20 μm (Near Infrared)', filter: 'Subaru CHARIS H/K Band', wl: 'λ = 1.65 – 2.20 μm (Near IR)', year: 2015.5 },
+            '2022': { title: '2022.9 — JWST NIRCam (Epoch 1)', sub: 'Filter: F356W Wide | Wavelength: 3.56 μm (Thermal Infrared)', filter: 'JWST NIRCam F356W', wl: 'λ = 3.56 μm (Thermal IR)', year: 2022.9 },
+            '2024': { title: '2024.5 — JWST NIRCam (Epoch 2)', sub: 'Filter: F200W Medium | Wavelength: 2.00 μm (Near Infrared)', filter: 'JWST NIRCam F200W', wl: 'λ = 2.00 μm (Near IR)', year: 2024.5 },
+            '2026': { title: '2026.2 — JWST NIRCam (Epoch 3)', sub: 'Filter: F444W Wide | Wavelength: 4.44 μm (Thermal Infrared)', filter: 'JWST NIRCam F444W', wl: 'λ = 4.44 μm (Thermal IR)', year: 2026.2 }
+        };
+
+        let currentEpochA = '2022';
+        let currentEpochB = '2026';
+        let isBlinking = false;
+        let blinkActiveFrame = 0;
+        let blinkInterval = null;
+        let opacityBlend = 0;
+
+        let isRawMode = false;
+        let showOverlays = false;
+        let showOrbits = true;
+
+        let zoomLevel = 1.0;
+        let panX = 0;
+        let panY = 0;
+        let isDragging = false;
+        let startX, startY;
+
+        const canvas = document.getElementById('astroCanvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        const centerX = width / 2;
+        const centerY = height / 2;
+
+        function solveKepler(M, e) {
+            M = M % (2 * Math.PI);
+            let E = M;
+            for (let i = 0; i < 10; i++) {
+                let f = E - e * Math.sin(E) - M;
+                let fPrime = 1.0 - e * Math.cos(E);
+                E -= f / fPrime;
+            }
+            return E;
+        }
+
+        function getPlanetPosition(planetKey, year) {
+            const p = PLANET_PARAMS[planetKey];
+            const dt = year - 2008.8;
+            const meanMotion = (2.0 * Math.PI) / p.P;
+            const M = (p.M0_deg * Math.PI / 180.0) + meanMotion * dt;
+            const E = solveKepler(M, p.e);
+
+            const sin_v = Math.sqrt(1 - p.e*p.e) * Math.sin(E) / (1 - p.e * Math.cos(E));
+            const cos_v = (Math.cos(E) - p.e) / (1 - p.e * Math.cos(E));
+            const v = Math.atan2(sin_v, cos_v);
+
+            const r_au = p.a * (1.0 - p.e * Math.cos(E));
+            const u = v + (p.omega_deg * Math.PI / 180.0);
+
+            const x_sky_au = r_au * (Math.cos(u) * Math.sin(OMEGA_RAD) + Math.sin(u) * Math.cos(OMEGA_RAD) * Math.cos(INC_RAD));
+            const y_sky_au = r_au * (Math.cos(u) * Math.cos(OMEGA_RAD) - Math.sin(u) * Math.sin(OMEGA_RAD) * Math.cos(INC_RAD));
+
+            const dx_arcsec = -x_sky_au / PARSEC_DIST;
+            const dy_arcsec = y_sky_au / PARSEC_DIST;
+
+            const sep = Math.sqrt(dx_arcsec*dx_arcsec + dy_arcsec*dy_arcsec);
+            const pa = (Math.atan2(-dx_arcsec, dy_arcsec) * 180.0 / Math.PI + 360.0) % 360.0;
+
+            return { dx: dx_arcsec, dy: dy_arcsec, sep, pa };
+        }
+
+        function render() {
+            ctx.save();
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.translate(centerX + panX, centerY + panY);
+            ctx.scale(zoomLevel, zoomLevel);
+            ctx.translate(-centerX, -centerY);
+
+            let activeEpochKey = (blinkActiveFrame === 0) ? currentEpochA : currentEpochB;
+            let year = EPOCHS[activeEpochKey].year;
+
+            // DRAW IMAGE
+            if (opacityBlend > 0 && opacityBlend < 100) {
+                const imgA = loadedImages[currentEpochA];
+                const imgB = loadedImages[currentEpochB];
+                if (imgA && imgA.complete) {
+                    ctx.globalAlpha = (100 - opacityBlend) / 100;
+                    ctx.drawImage(imgA, centerX - 350, centerY - 350, 700, 700);
+                }
+                if (imgB && imgB.complete) {
+                    ctx.globalAlpha = opacityBlend / 100;
+                    ctx.drawImage(imgB, centerX - 350, centerY - 350, 700, 700);
+                }
+                ctx.globalAlpha = 1.0;
+            } else {
+                const img = loadedImages[activeEpochKey];
+                if (img && img.complete) {
+                    ctx.drawImage(img, centerX - 350, centerY - 350, 700, 700);
+                }
+            }
+
+            // Draw Inclined 3D Keplerian Projected Orbits
+            if (showOrbits) {
+                drawKeplerianOrbitPaths();
+            }
+
+            // Draw Labels (if enabled)
+            if (showOverlays) {
+                drawOverlays(year);
+            }
+
+            ctx.restore();
+
+            updateEpochOverlay();
+        }
+
+        function drawKeplerianOrbitPaths() {
+            ctx.save();
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([5, 5]);
+
+            for (const [key, p] of Object.entries(PLANET_PARAMS)) {
+                const a_arcsec = p.a / PARSEC_DIST;
+                const a_pix = a_arcsec * PIXELS_PER_ARCSEC;
+                const b_pix = a_pix * Math.cos(INC_RAD);
+
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(-OMEGA_RAD);
+                ctx.strokeStyle = p.color + 'dd';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, b_pix, a_pix, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            }
+            ctx.restore();
+        }
+
+        function drawOverlays(year) {
+            for (const [key, p] of Object.entries(PLANET_PARAMS)) {
+                const pos = getPlanetPosition(key, year);
+                const px = centerX + (pos.dx * PIXELS_PER_ARCSEC);
+                const py = centerY + (pos.dy * PIXELS_PER_ARCSEC);
+                ctx.font = '600 11px Inter, sans-serif';
+                ctx.fillStyle = p.color;
+                ctx.fillText(`HR 8799 ${key}`, px + 12, py - 6);
+            }
+        }
+
+        function updateEpochOverlay() {
+            const activeKey = (blinkActiveFrame === 0) ? currentEpochA : currentEpochB;
+            const ep = EPOCHS[activeKey];
+            document.getElementById('epochTitle').innerHTML = `Epoch ${blinkActiveFrame === 0 ? 'A' : 'B'}: ${ep.title}`;
+            document.getElementById('epochSub').innerText = ep.sub;
+            
+            document.getElementById('wvFilterName').innerText = ep.filter;
+            document.getElementById('wvVal').innerText = ep.wl;
+
+            const blinkInd = document.getElementById('blinkStatus');
+            if (blinkActiveFrame === 0) blinkInd.classList.add('active');
+            else blinkInd.classList.remove('active');
+        }
+
+        // Controls
+        document.getElementById('epochA').addEventListener('change', (e) => { currentEpochA = e.target.value; render(); });
+        document.getElementById('epochB').addEventListener('change', (e) => { currentEpochB = e.target.value; render(); });
+
+        document.getElementById('btnShowA').addEventListener('click', () => { stopBlinking(); blinkActiveFrame = 0; render(); });
+        document.getElementById('btnShowB').addEventListener('click', () => { stopBlinking(); blinkActiveFrame = 1; render(); });
+
+        document.getElementById('btnToggleBlink').addEventListener('click', () => {
+            if (isBlinking) stopBlinking(); else startBlinking();
+        });
+
+        function startBlinking() {
+            isBlinking = true;
+            document.getElementById('btnToggleBlink').classList.add('active');
+            document.getElementById('btnToggleBlink').innerHTML = '<span>⏸ Pause Blinking</span>';
+            const rate = parseInt(document.getElementById('blinkRate').value);
+            blinkInterval = setInterval(() => {
+                blinkActiveFrame = (blinkActiveFrame === 0) ? 1 : 0;
+                render();
+            }, rate);
+        }
+
+        function stopBlinking() {
+            isBlinking = false;
+            document.getElementById('btnToggleBlink').classList.remove('active');
+            document.getElementById('btnToggleBlink').innerHTML = '<span>⚡ Toggle Automatic Blinking</span>';
+            if (blinkInterval) clearInterval(blinkInterval);
+        }
+
+        document.getElementById('blinkRate').addEventListener('input', (e) => {
+            document.getElementById('blinkRateVal').innerText = `${e.target.value} ms`;
+            if (isBlinking) { stopBlinking(); startBlinking(); }
+        });
+
+        document.getElementById('opacityBlend').addEventListener('input', (e) => {
+            opacityBlend = parseInt(e.target.value);
+            document.getElementById('opacityVal').innerText = `${100 - opacityBlend}% A / ${opacityBlend}% B`;
+            render();
+        });
+
+        document.getElementById('btnToggleOverlays').addEventListener('click', (e) => {
+            showOverlays = !showOverlays;
+            e.target.classList.toggle('active', showOverlays);
+            render();
+        });
+
+        document.getElementById('btnToggleOrbits').addEventListener('click', (e) => {
+            showOrbits = !showOrbits;
+            e.target.classList.toggle('active', showOrbits);
+            render();
+        });
+
+        document.querySelectorAll('.focus-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const planetKey = btn.getAttribute('data-planet');
+                if (planetKey === 'all') { zoomLevel = 1.0; panX = 0; panY = 0; }
+                else if (PLANET_PARAMS[planetKey]) {
+                    const pos = getPlanetPosition(planetKey, EPOCHS[currentEpochA].year);
+                    zoomLevel = 2.4;
+                    panX = -pos.dx * PIXELS_PER_ARCSEC * zoomLevel;
+                    panY = -pos.dy * PIXELS_PER_ARCSEC * zoomLevel;
+                }
+                render();
+            });
+        });
+
+        document.getElementById('btnZoomIn').addEventListener('click', () => { zoomLevel = Math.min(5.0, zoomLevel * 1.2); render(); });
+        document.getElementById('btnZoomOut').addEventListener('click', () => { zoomLevel = Math.max(0.5, zoomLevel / 1.2); render(); });
+        document.getElementById('btnResetView').addEventListener('click', () => { zoomLevel = 1.0; panX = 0; panY = 0; render(); });
+
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            zoomLevel = Math.min(6.0, Math.max(0.4, zoomLevel * (e.deltaY < 0 ? 1.1 : 0.9)));
+            render();
+        });
+
+        canvas.addEventListener('mousedown', (e) => { isDragging = true; startX = e.clientX - panX; startY = e.clientY - panY; });
+        window.addEventListener('mousemove', (e) => { if (!isDragging) return; panX = e.clientX - startX; panY = e.clientY - startY; render(); });
+        window.addEventListener('mouseup', () => { isDragging = false; });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') { e.preventDefault(); document.getElementById('btnToggleBlink').click(); }
+            else if (e.key === '1') { document.getElementById('btnShowA').click(); }
+            else if (e.key === '2') { document.getElementById('btnShowB').click(); }
+        });
+
+        startBlinking();
+        render();
+    </script>
+</body>
+</html>
