@@ -1,4 +1,17 @@
-<!DOCTYPE html>
+"""
+Generate high-contrast, visually obvious HR 8799 Blink Comparator.
+Defaults to Epoch A = 2008.8 (Keck II) vs Epoch B = 2026.2 (JWST NIRCam).
+Features live flashing frame indicators, distinct colormaps, and 18-year orbital motion display.
+"""
+
+import os
+
+HTML_PATH = "/Users/tboats/Documents/Code/physics/astronomy/Projects/hr8799-jwst-orbits/docs/hr8799_blink_comparator.html"
+
+def create_high_contrast_blinker():
+    os.makedirs(os.path.dirname(HTML_PATH), exist_ok=True)
+    
+    html_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -337,7 +350,7 @@
 
     <script>
         const EPOCHS = {
-            '2008': { title: '2008.8 — Discovery Epoch (Keck II NIRC2)', sub: 'Filter: L' Band (3.77 μm) | Keck II Coronagraph' },
+            '2008': { title: '2008.8 — Discovery Epoch (Keck II NIRC2)', sub: 'Filter: L\' Band (3.77 μm) | Keck II Coronagraph' },
             '2015': { title: '2015.5 — Archival Baseline (Subaru CHARIS)', sub: 'Filter: H/K Band (1.65-2.2 μm) | Subaru Telescope' },
             '2022': { title: '2022.9 — JWST NIRCam (Epoch 1)', sub: 'Filter: F356W (3.56 μm Thermal IR) | Space Telescope' },
             '2024': { title: '2024.5 — JWST NIRCam (Epoch 2)', sub: 'Filter: F200W (2.00 μm Near IR) | Space Telescope' },
@@ -421,3 +434,12 @@
     </script>
 </body>
 </html>
+"""
+
+    with open(HTML_PATH, 'w', encoding='utf-8') as f:
+        f.write(html_content)
+
+    print(f"✅ Created high-contrast 2008 vs 2026 Blink Comparator at: {HTML_PATH}")
+
+if __name__ == "__main__":
+    create_high_contrast_blinker()
