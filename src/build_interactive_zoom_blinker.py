@@ -1,4 +1,20 @@
-<!DOCTYPE html>
+"""
+Generate HR 8799 Blink Comparator with interactive Zoom controls and fixed Planet Markers toggle.
+Features:
+  - Interactive Zoom In (+), Zoom Out (-), Reset View buttons (up to 500% zoom)
+  - Synchronized image + SVG orbit + marker scaling in perfect lockstep
+  - Mouse wheel zoom support
+  - Fixed Planet Marker Toggle (100% reliable SVG group display toggling)
+"""
+
+import os
+
+HTML_PATH = "/Users/tboats/Documents/Code/physics/astronomy/Projects/hr8799-jwst-orbits/docs/hr8799_blink_comparator.html"
+
+def create_interactive_zoom_blinker():
+    os.makedirs(os.path.dirname(HTML_PATH), exist_ok=True)
+    
+    html_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -624,3 +640,12 @@
     </script>
 </body>
 </html>
+"""
+
+    with open(HTML_PATH, 'w', encoding='utf-8') as f:
+        f.write(html_content)
+
+    print(f"✅ Created HR 8799 Blink Comparator with interactive Zoom & fixed Planet Markers at: {HTML_PATH}")
+
+if __name__ == "__main__":
+    create_interactive_zoom_blinker()
