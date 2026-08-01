@@ -1,4 +1,16 @@
-<!DOCTYPE html>
+"""
+Generate HR 8799 Blink Comparator with clean, dynamic Frame A and Frame B labels.
+Removes static hardcoded descriptions in control labels (<label>Frame A</label>, <label>Frame B</label>).
+"""
+
+import os
+
+HTML_PATH = "/Users/tboats/Documents/Code/physics/astronomy/Projects/hr8799-jwst-orbits/docs/hr8799_blink_comparator.html"
+
+def create_clean_labels_blinker():
+    os.makedirs(os.path.dirname(HTML_PATH), exist_ok=True)
+    
+    html_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -624,3 +636,12 @@
     </script>
 </body>
 </html>
+"""
+
+    with open(HTML_PATH, 'w', encoding='utf-8') as f:
+        f.write(html_content)
+
+    print(f"✅ Created HR 8799 Blink Comparator with clean Frame A and Frame B labels at: {HTML_PATH}")
+
+if __name__ == "__main__":
+    create_clean_labels_blinker()
